@@ -1,7 +1,12 @@
 package tech.dbgsoftware.tools;
 
 
-import java.awt.Toolkit;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
@@ -14,19 +19,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 
 
-public class AutoCreateWallet {
+public class AutoCreateWallet1 {
 
 
 
   private WebDriver driver;
 
-  private Logger logger = Logger.getLogger(AutoCreateWallet.class.getName());
+  private Logger logger = Logger.getLogger(AutoCreateWallet1.class.getName());
   String sed = null;
 
   static ArrayList<InnerWallet> walletList = new ArrayList<InnerWallet>(300){};
@@ -83,12 +84,17 @@ public class AutoCreateWallet {
       ChromeOptions chromeOptions = new ChromeOptions();
       chromeOptions.addExtensions(new File("C:\\driver\\phantom.crx"));
       driver = new ChromeDriver(chromeOptions);
-      //LogUtils.info("打开挖矿页面");
       driver.get("https://solend.fi/dashboard");
-      sleep(5);
+      sleep(3);
       //LogUtils.info("切换到钱包导入界面");
-      driver.navigate().refresh();
-      driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[1]));
+      for (int i = 0; i < driver.getWindowHandles().size(); i++) {
+        sleep(1);
+        driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[i]));
+        sleep(1);
+        if (driver.getTitle().equals("Phantom Wallet")){
+          break;
+        }
+      }
       //LogUtils.info("开始使用");
       //创建钱包
       clickTillShowByXPathArray(driver, "//*[@id=\"root\"]/main/div/div/section/button[1]",0);
@@ -118,16 +124,18 @@ public class AutoCreateWallet {
       }catch (Exception e){
 
       }
-
-      //打开SOlend
       driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[0]));
-      clickTillShowByXPathArray(driver,"//*[@id=\"root\"]/section/main/div/div/div[2]/div/div/button",0);
-      sleep(2);
-      clickTillShowByXPathArray(driver,"/html/body/div[2]/div/div[2]/div/div[2]/div[2]/div[1]/div/div/div[1]/div",0);
-      Thread.sleep(2000);
-      driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[1]));
+      driver.get("chrome-extension://bfnaelmomeimhlpmgjnjophhpkkoljpa/popup.html");
+      for (int i = 0; i < driver.getWindowHandles().size(); i++) {
+        sleep(1);
+        driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[i]));
+        sleep(1);
+        if (driver.getTitle().equals("Phantom Wallet")){
+          break;
+        }
+      }
       clickTillShowByXPathArray(driver,"//*[@id=\"root\"]/div/section/div[2]/p[2]",0);
-      Thread.sleep(1000);
+      sleep(2);
       String address = getFromClipboard();
       innerWallet = new InnerWallet(sed, address);
       walletList.add(innerWallet);
@@ -143,13 +151,13 @@ public class AutoCreateWallet {
     }
   }
   public static void main(String[] args) {
-    int taskNum = 5;
+    int taskNum = 2;
     CountDownLatch countDownLatch = new CountDownLatch(taskNum);
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     for (int i = 0; i < taskNum; i++) {
       executorService.execute(() -> {
         try {
-          while (!new AutoCreateWallet().initEnv()) {
+          while (!new AutoCreateWallet1().initEnv()) {
             sleep(1);
           }
         } finally {
@@ -169,19 +177,61 @@ public class AutoCreateWallet {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
-    byte[] buff;
+/*
+    byte[] buff1;
+    byte[] buff2;
     try
     {
-      buff=walletAddressList.toString().getBytes();
-      FileOutputStream out=new FileOutputStream("d:\\newwallet.txt", true);
-      out.write(buff,0,buff.length);
-      out.close();
+      buff1=walletSedList.toString().getBytes();
+
+      FileOutputStream out1=new FileOutputStream("d:\\newwalletSed.txt", true);
+      out1.write(buff1,0,buff1.length);
+      out1.close();
+      buff2=walletAddressList.toString().getBytes();
+      FileOutputStream out2=new FileOutputStream("d:\\newwalletAddress.txt", true);
+      out2.write(buff2,0,buff2.length);
+      out2.close();
+
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
+    */
+    byte[] buff1;
+    byte[] buff2;
+    try {
+      FileOutputStream out1 =new FileOutputStream("d:\\newWalletSed1.txt", true);
+      for (int i = 0; i < walletSedList.size(); i++) {
+        buff1 = walletSedList.get(i).toString().getBytes();
+        out1.write("\"".getBytes());
+        out1.write(buff1,0,buff1.length);
+        out1.write("\"".getBytes());
+        out1.write(",".getBytes());
+        out1.write("\r\n".getBytes());
+
+      }
+      out1.close();
+
+      FileOutputStream out2=new FileOutputStream("d:\\newWalletAddress1.txt", true);
+      for (int i = 0; i < walletAddressList.size(); i++) {
+        buff2 = walletAddressList.get(i).toString().getBytes();
+        out2.write("\"".getBytes());
+        out2.write(buff2,0,buff2.length);
+        out2.write("\"".getBytes());
+        out2.write(",".getBytes());
+        out2.write("\r\n".getBytes());
+
+      }
+      out2.close();
+
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
   }
 
   }

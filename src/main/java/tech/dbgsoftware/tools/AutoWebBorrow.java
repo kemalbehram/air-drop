@@ -113,27 +113,30 @@ public class AutoWebBorrow implements Runnable {
     }
     return true;
   }
-
-
   public void refreshWeb() {
     driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[0]));
     sleep(3);
     driver.navigate().refresh();
     sleep(3);
     closeWindow();
-    sleep(3);
+    sleep(1);
+    for (int i = 0; i < driver.getWindowHandles().size(); i++) {
+      sleep(1);
+      driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[i]));
+      sleep(1);
+      if (driver.getTitle().equals("Solend")){
+        break;
+      }
+    }
+    sleep(2);
     clickTillShowByXPathArray(driver,
         "//*[@id=\"root\"]/section/main/div/div/div[2]/div/div/button", 0);
-    //driver.findElements(By.xpath("//*[@id=\"root\"]/section/main/div/div/div[2]/div/div/button")).get(0).click();
     sleep(3);
     clickTillShowByXPathArray(driver,
         "/html/body/div[2]/div/div[2]/div/div[2]/div[2]/div[1]/div/div/div[1]/div", 0);
-
-
   }
 
   public void closeWindow() {
-
     try {
       String winHandleBefore = driver.getWindowHandle();//关闭当前窗口前，获取当前窗口句柄
       Set<String> winHandles = driver.getWindowHandles();//使用set集合获取所有窗口句柄
@@ -169,13 +172,16 @@ public class AutoWebBorrow implements Runnable {
       driver.get("https://solend.fi/dashboard");
       sleep(1);
       logger.info("切换到钱包导入界面");
-
-      String title = driver.getTitle();
-      if (title.equals("Phantom Wallet")) {
-        return initEnv();
-      } else {
-        driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[1]));
+      //确保切换到钱包页面
+      for (int i = 0; i < driver.getWindowHandles().size(); i++) {
+        sleep(1);
+        driver.switchTo().window(String.valueOf(driver.getWindowHandles().toArray()[i]));
+        sleep(1);
+        if (driver.getTitle().equals("Phantom Wallet")){
+          break;
+        }
       }
+
 
       sleep(1);
       logger.info("开始使用");
@@ -574,7 +580,7 @@ public class AutoWebBorrow implements Runnable {
 
     sleep(3);
 
-    //存-借-还-取
+    //存-借
     try {
       logger.info("存USDT");
       storeUsdt();
@@ -657,7 +663,7 @@ public class AutoWebBorrow implements Runnable {
     String val = "0";
     List<String> sed = Arrays.asList(
 
-        "risk canal illegal liberty below share sibling urge warfare flash wrist pull"
+        "minute banana tape nerve actress caught whale victory debate rain elevator kitten"
 
     );
     ExecutorService executorService = Executors.newFixedThreadPool(3);
